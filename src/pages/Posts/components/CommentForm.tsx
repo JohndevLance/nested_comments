@@ -7,7 +7,7 @@ import {CommentPayload} from '../../../types';
 
 type CommentFormProps = {
   onSubmit: (data: CommentPayload) => void;
-  parentId: string;
+  parentId: string | null; // Optional parentId for replies
   submitting?: boolean;
   postId: string; // Added postId to the props
   onCancel?: () => void; // Optional cancel callback
@@ -33,13 +33,13 @@ export const CommentForm: React.FC<CommentFormProps> = ({
     onSubmit({
       content: data.content,
       post_id: postId, // Pass postId to the onSubmit function
-      reply_to: parentId || undefined, // Use parentId if provided
+      reply_to: parentId || null, // Use parentId for replies
     });
     reset(); // clear the form
   };
 
   return (
-    <View style={{marginVertical: 10}}>
+    <View style={{marginVertical: 10, padding: 10}}>
       <TextAreaField
         name="content"
         control={control}

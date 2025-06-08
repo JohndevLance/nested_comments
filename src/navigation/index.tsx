@@ -6,7 +6,9 @@ import Login from '../pages/Auth/Login';
 import {useUserStore} from '../store/useUserStore';
 import PostListScreen from '../pages/Posts/PostList';
 import CreatePostScreen from '../pages/Posts/CreatePostScreen';
-import {CommentsScreen} from '../pages/Posts/CommentScreen';
+import {PostScreen} from '../pages/Posts/PostScreen';
+import {CommentsReplies} from '../pages/Posts/CommentReplies';
+import {CommentsDeepReplies} from '../pages/Posts/CommentDeepReplies';
 
 const Stack = createNativeStackNavigator();
 
@@ -21,9 +23,20 @@ function AppStack() {
       />
       <Stack.Screen name="CreatePost" component={CreatePostScreen} />
       <Stack.Screen
-        name="Comments"
-        component={CommentsScreen} // Replace with actual PostDetails component
+        name="PostScreen"
+        component={PostScreen} // Replace with actual PostDetails component
         options={{title: 'Post Details'}}
+      />
+      <Stack.Screen
+        name="CommentReplies"
+        component={CommentsReplies} // Replace with actual PostDetails component
+        options={{title: 'Comment Replies'}}
+      />
+      {/* deep replies */}
+      <Stack.Screen
+        name="DeepReplies"
+        component={CommentsDeepReplies} // Replace with actual DeepReplies component
+        options={{title: 'Deep Replies'}}
       />
     </Stack.Navigator>
   );

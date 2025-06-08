@@ -8,6 +8,8 @@ import {CommentForm} from './CommentForm';
 import {useCreateComment} from '../../../api/comments';
 import {useQueryClient} from '@tanstack/react-query';
 import Toast from 'react-native-toast-message';
+import {usePostCommentStore} from '../../../store/usePostCommentStore';
+import RenderHTML from 'react-native-render-html';
 
 interface CommentItemProps {
   comment: Comment;
@@ -22,16 +24,27 @@ export const CommentItem: React.FC<CommentItemProps> = ({
   onToggleExpanded,
   postId,
 }) => {
-  const [showReplyForm, setShowReplyForm] = useState(false);
+  const [showReplyForm, setShoReplyForm] = useState(false);
   const {mutate, isPending} = useCreateComment();
   const queryClient = useQueryClient();
 
-  const getIndentationStyle = (depth: number) => ({
-    marginLeft: Math.min(depth * 15, 180), // Max indentation limit
-    borderLeftWidth: depth > 0 ? 1 : 0,
-    borderLeftColor: getDepthColor(depth),
-    paddingLeft: depth > 0 ? 10 : 0,
-  });
+  const toggleReplyForm = () => {
+    setShoReplyForm(prev => !prev);
+  };
+
+  const getIndentationStyle = (depth: number): any => {
+    const computeIndent = (d: number): number => {
+      if (d <= 4) return d * 15;
+      return computeIndent(d - 4);
+    };
+
+    return {
+      marginLeft: computeIndent(depth),
+      borderLeftWidth: depth > 0 ? 1 : 0,
+      borderLeftColor: getDepthColor(depth),
+      paddingLeft: depth > 0 ? 10 : 0,
+    };
+  };
 
   const getDepthColor = (depth: number) => {
     return colors[depth % colors.length];
@@ -52,7 +65,7 @@ export const CommentItem: React.FC<CommentItemProps> = ({
   const submitComment = (payload: CommentPayload) => {
     mutate(payload, {
       onSuccess: () => {
-        setShowReplyForm(false);
+        toggleReplyForm();
         Toast.show({
           type: 'success',
           text1: 'Comment posted successfully',
@@ -79,16 +92,19 @@ export const CommentItem: React.FC<CommentItemProps> = ({
         </Text>
       </View>
 
-      <Text style={styles.content}>{comment?.content}</Text>
+      {/* <Text style={styles.content}>{comment?.content}</Text> */}
+      <RenderHTML
+        contentWidth={300}
+        source={{html: comment?.content}}
+        baseStyle={styles.content}
+      />
 
       <View style={styles.actions}>
-        <TouchableOpacity
-          style={styles.actionButton}
-          onPress={() => setShowReplyForm(!showReplyForm)}>
+        <TouchableOpacity style={styles.actionButton} onPress={toggleReplyForm}>
           <Text style={styles.actionText}>Reply</Text>
         </TouchableOpacity>
 
-        {comment.replies && comment?.replies?.length > 0 && (
+        {comment.replies && comment?.replies?.length > 0 ? (
           <TouchableOpacity
             style={styles.actionButton}
             onPress={onToggleExpanded}>
@@ -96,18 +112,18 @@ export const CommentItem: React.FC<CommentItemProps> = ({
               {isExpanded ? 'Hide' : 'Show'} {comment.replies?.length} replies
             </Text>
           </TouchableOpacity>
-        )}
+        ) : null}
       </View>
 
-      {showReplyForm && (
+      {showReplyForm ? (
         <CommentForm
           postId={postId}
-          parentId={comment.id}
+          parentId={comment?.id ?? null}
           onSubmit={submitComment}
-          onCancel={() => setShowReplyForm(false)}
+          onCancel={toggleReplyForm}
           submitting={isPending}
         />
-      )}
+      ) : null}
     </View>
   );
 };
@@ -115,6 +131,7 @@ export const CommentItem: React.FC<CommentItemProps> = ({
 const styles = StyleSheet.create({
   container: {
     marginVertical: 8,
+    marginRight: 10,
     padding: 10,
     backgroundColor: '#f9f9f9',
     borderRadius: 8,

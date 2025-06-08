@@ -37,6 +37,8 @@ export interface Comment {
   replies?: Comment[];
   has_more_replies?: boolean;
   is_expanded?: boolean;
+  child_count?: number;
+  path?: string;
 }
 
 export interface CommentThread {
@@ -53,6 +55,6 @@ export type CommentForm = {
 
 export type CommentPayload = {
   content: string;
-  reply_to?: string;
+  reply_to?: string | null;
   post_id: string;
 };

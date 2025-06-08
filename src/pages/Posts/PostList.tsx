@@ -1,40 +1,90 @@
 import React from 'react';
-import {FlatList, View, StyleSheet, useWindowDimensions} from 'react-native';
-import {Card, Text, Button, Icon} from 'react-native-elements';
+import {
+  FlatList,
+  View,
+  StyleSheet,
+  useWindowDimensions,
+  ActivityIndicator,
+} from 'react-native';
+import {Text} from 'react-native-elements';
 import {usePosts} from '../../api/posts';
-import RenderHTML from 'react-native-render-html';
 import {PostItem} from './components/PostItem';
+import {usePostCommentStore} from '../../store/usePostCommentStore';
+import {Post} from '../../types';
+import {useNavigation} from '@react-navigation/native';
+import {PER_PAGE} from '../../constants/common';
 
-// Sample post data (replace with your API later)
 const PostListScreen = () => {
-  const usePostsQuery = usePosts();
+  const queryParams = {
+    per_page: PER_PAGE,
+    sort: 'latest',
+  };
+  const {
+    data,
+    isLoading,
+    isError,
+    error,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = usePosts(queryParams);
+
+  const navigation = useNavigation();
+  const {setPostId, setPost, toggleReplyForm} = usePostCommentStore();
   const {width} = useWindowDimensions();
-  const {data: posts, isLoading, error} = usePostsQuery;
-  const postsData = posts?.items || [];
+
+  // Flatten paginated data
+  const postsData = data
+    ? data.pages.flatMap(page => page.items || page.posts || [])
+    : [];
 
   if (isLoading) {
-    return <Text>Loading...</Text>;
+    return <ActivityIndicator />;
   }
-  if (error) {
-    return <Text>Error loading posts: {error.message}</Text>;
+  if (isError) {
+    return <Text>Error loading posts: {error?.message}</Text>;
   }
+
+  const onPressPost = (post: Post) => {
+    setPost(post);
+    setPostId(post.id);
+
+    navigation.navigate('PostScreen');
+  };
 
   return (
     <View style={styles.container}>
       <FlatList
         data={postsData}
-        renderItem={({item}) => {
-          return PostItem({post: item, onPress: () => {}, width});
-        }}
+        renderItem={({item}) => (
+          <PostItem
+            post={item}
+            onPress={() => onPressPost(item)}
+            onPressComment={() => {
+              setPost(item);
+              setPostId(item.id);
+              toggleReplyForm();
+              navigation.navigate('PostScreen', {
+                addComment: true,
+              });
+            }}
+            width={width}
+          />
+        )}
         keyExtractor={item => item.id}
         contentContainerStyle={styles.list}
+        onEndReached={() => {
+          if (hasNextPage && !isFetchingNextPage) fetchNextPage();
+        }}
+        onEndReachedThreshold={0.8}
+        ListFooterComponent={isFetchingNextPage ? <ActivityIndicator /> : null}
       />
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {flex: 1, backgroundColor: '#fff'},
+  container: {backgroundColor: '#fff', marginHorizontal: 10},
   list: {paddingBottom: 20},
   body: {marginBottom: 10},
   button: {marginTop: 10, borderColor: '#2089dc'},

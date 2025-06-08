@@ -24,8 +24,7 @@ export const axiosApi = axios.create({
 });
 
 export const axiosCommentApi = axios.create({
-  baseURL:
-    'https://xsrr-l2ye-dpbj.f2.xano.io/api:HPNnGSlw:staging/comments?post_id=bba1c105-7dd9-410a-a0c5-19df6a0500f4',
+  baseURL: 'https://xsrr-l2ye-dpbj.f2.xano.io/api:HPNnGSlw:staging',
   timeout: 30000,
   headers: {},
 });

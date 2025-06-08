@@ -3,11 +3,12 @@ import React, {useEffect, useState} from 'react';
 import {View, FlatList, Text, TouchableOpacity, StyleSheet} from 'react-native';
 import {CommentItem} from './CommentItem';
 import {Comment} from '../../../types';
+import {useNavigation} from '@react-navigation/native';
 
 interface CommentThreadProps {
   postId: string;
   comments: Comment[];
-  onLoadMore: (depth: number) => void;
+  onLoadMore?: (commentId: string) => void;
 }
 
 export const CommentThread: React.FC<CommentThreadProps> = ({
@@ -18,7 +19,7 @@ export const CommentThread: React.FC<CommentThreadProps> = ({
   const [expandedComments, setExpandedComments] = useState<Set<string>>(
     new Set(),
   );
-
+  const navigation = useNavigation();
   const toggleExpanded = (commentId: string) => {
     const newExpanded = new Set(expandedComments);
     if (newExpanded.has(commentId)) {
@@ -42,19 +43,23 @@ export const CommentThread: React.FC<CommentThreadProps> = ({
         postId={postId}
       />
 
-      {shouldShowViewMore(item) && item.has_more_replies && (
+      {shouldShowViewMore(item) && item.child_count && item.child_count > 0 && (
         <TouchableOpacity
           style={[styles.viewMoreButton, {marginLeft: item.depth_level * 20}]}
-          onPress={() => onLoadMore(item.depth_level + 1)}>
+          onPress={() => onLoadMore?.(item?.id)}>
           <Text style={styles.viewMoreText}>View More Replies</Text>
         </TouchableOpacity>
       )}
 
-      {item.replies && expandedComments.has(item.id) && (
+      {(item.child_count || 0 > 0) && expandedComments.has(item.id) && (
         <CommentThread
           postId={postId}
           comments={item.replies}
-          onLoadMore={onLoadMore}
+          onLoadMore={
+            onLoadMore
+              ? (commentId: string) => onLoadMore(commentId)
+              : undefined
+          }
         />
       )}
     </View>

@@ -1,9 +1,10 @@
 import {useNavigation} from '@react-navigation/native';
 import React, {useLayoutEffect} from 'react';
 import {View, StyleSheet, ScrollView, Pressable} from 'react-native';
-import {Card, Text, Icon, Button} from 'react-native-elements';
+import {Card, Text, Button} from 'react-native-elements';
 import {useUserStore} from '../../store/useUserStore';
 import PostList from '../Posts/PostList';
+import Icon from '@react-native-vector-icons/fontawesome6';
 
 const Home = () => {
   const navigation = useNavigation();
@@ -28,25 +29,32 @@ const Home = () => {
   };
 
   return (
-    <ScrollView>
+    <View>
       <View style={styles.container}>
-        <Button onPress={goToCommentScreen} title="Go to Comments" />
         <Card containerStyle={styles.card}>
           <Pressable onPress={handleCreatePost} style={styles.createPost}>
-            <Icon name="edit" type="material" color="#2089dc" />
+            <Icon
+              name="pen"
+              color="#2089dc"
+              size={20}
+              style={styles.icon}
+              iconStyle="solid"
+              onPress={goToCommentScreen}
+            />
             <Text style={styles.createPostText}>What's on your mind?</Text>
           </Pressable>
         </Card>
-        <PostList />
       </View>
-    </ScrollView>
+      <PostList />
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    paddingVertical: 20,
+    marginHorizontal: 10,
     alignItems: 'center',
+    marginBottom: 20,
   },
   card: {
     width: '100%',
@@ -74,6 +82,7 @@ const styles = StyleSheet.create({
     padding: 10,
     backgroundColor: '#f0f0f0',
     borderRadius: 8,
+    marginBottom: 10,
   },
   createPostText: {
     marginLeft: 10,
